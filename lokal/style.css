@@ -1,0 +1,76 @@
+/* ===== Variables ===== */
+:root {
+  --clr-white: #fff;
+  --clr-black: #000000;
+  --clr-grey: #494949;
+  --clr-primary: #82e6ff;
+  --clr-secondPrimary: #ffa600;
+  --clr-text: #242424;
+  --clr-font: "Arial", "Helvetica", sans-serif;
+  --mainTransition: all 0.3s linear;
+}
+/* ===== Global Styles ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: var(--clr-font);
+  line-height: 1.5;
+  color: var(--clr-text);
+  overflow-x: hidden;
+  width: 100%;
+  background: var(--clr-primary);
+}
+.center-container {
+  margin: 0rem 1rem;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 0.5rem;
+}
+h1 {
+    font-size: 5rem;
+    color: var(--clr-secondPrimary);
+    font-weight: bold;
+}
+h2 {
+  font-size: 2.5rem;
+}
+h3 {
+  font-size: 2.4rem;
+}
+h4 {
+  font-size: 2rem;
+}
+a {
+  text-decoration: none;
+  color: var(--clr-text);
+}
+/* Menüp */
+.menue{
+    text-align: center;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-content: space-around;
+}
+.menue li {
+    list-style: none;
+}
+.menue li a h2:hover{
+    color: var(--clr-secondPrimary);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+.menue > * {
+    width: 100%;
+}
+
+
