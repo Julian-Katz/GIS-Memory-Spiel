@@ -52,7 +52,10 @@ a {
   text-decoration: none;
   color: var(--clr-text);
 }
-/* Menüp */
+img {
+  width: 100%;
+}
+/* Menü */
 .menue{
     text-align: center;
     height: 80vh;
@@ -71,6 +74,26 @@ a {
 }
 .menue > * {
     width: 100%;
+}
+
+/* Game */
+.game-cards {
+  margin: 5rem auto;
+  display: grid;
+  width: 90vw;
+  height: 90vw;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-areas:
+    "a b c d"
+    "e f g h"
+    "i j k l"
+    "m n o p";
+    gap: 1rem;
+}
+.game-cards .card {
+  overflow: hidden;
+  border: 5px white;
 }
 
 
