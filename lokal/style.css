@@ -77,23 +77,61 @@ img {
 }
 
 /* Game */
+.game-timer{
+  margin: 1rem 0;
+  font-size: 2rem;
+  text-align: center;
+}
 .game-cards {
-  margin: 5rem auto;
+  margin: 3rem auto;
   display: grid;
   width: 90vw;
   height: 90vw;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(4, 1fr);
   grid-template-areas:
-    "a b c d"
-    "e f g h"
-    "i j k l"
-    "m n o p";
+    "a0 a1 b0 b1"
+    "c0 c1 d0 d1"
+    "e0 e1 f0 f1"
+    "g0 g1 h0 h1";
     gap: 1rem;
 }
-.game-cards .card {
+.card-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 1000px;
+}
+.card {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: all 0.5s ease;
+}
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  background: url(../media/cardBack.png);
+  border-radius: 1rem;
+  border: 10px solid white;
+}
+.card-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  background: red;
+  transform: rotateY(180deg);
   overflow: hidden;
-  border: 5px white;
+  border-radius: 1rem ;
+  border: 10px solid white;
+}
+/* add to card class to rotate */
+.rotate-card{
+  transform: rotateY(180deg);
 }
 
 
