@@ -1,1 +1,1 @@
-{"version":3,"file":"gameScript.js","sourceRoot":"","sources":["gameScript.ts"],"names":[],"mappings":";AAAA,IAAI,KAAK,GAAS,EAAE,EAAE,EAAE,GAAG,EAAE,IAAI,EAAE,+JAA+J,EAAE,CAAC;AAOrM,SAAS,SAAS;AAElB,CAAC"}
+{"version":3,"file":"gameScript.js","sourceRoot":"","sources":["gameScript.ts"],"names":[],"mappings":";AAAA,IAAI,KAAK,GAAS,EAAE,EAAE,EAAE,GAAG,EAAE,IAAI,EAAE,+JAA+J,EAAE,CAAC;AAOrM,KAAK,UAAU,SAAS;AAExB,CAAC"}

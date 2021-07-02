@@ -5,6 +5,6 @@ interface Card {
     link: string;
 }
 
-function loadCards {
-    
+async function loadCards {
+
 }
