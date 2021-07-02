@@ -5,3 +5,6 @@ interface Card {
     link: string;
 }
 
+function loadCards {
+    
+}

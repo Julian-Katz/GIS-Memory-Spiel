@@ -1,0 +1,23 @@
+{
+  "name": "gis-memory-spiel",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "mongodb": "^3.6.9"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Julian-Katz/GIS-Memory-Spiel.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Julian-Katz/GIS-Memory-Spiel/issues"
+  },
+  "homepage": "https://github.com/Julian-Katz/GIS-Memory-Spiel#readme"
+}
