@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Http = require("http");
-const url = require("url");
 const Mongo = require("mongodb");
 var Server;
 (function (Server) {
@@ -14,7 +13,7 @@ var Server;
     server.addListener("request", handleRequests);
     server.listen(port);
     async function handleRequests(_request, _response) {
-        let currentUrl = url.parse(_request.url, true);
+        // let currentUrl: url.UrlWithParsedQuery = url.parse(_request.url, true);
         console.log(_request.url);
         console.log("Link wurde gesendet");
         _response.setHeader("content-type", "text/html; charset=utf-8");

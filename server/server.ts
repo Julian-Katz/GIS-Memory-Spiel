@@ -22,7 +22,7 @@ namespace Server {
     server.listen(port);
     
     async function handleRequests(_request: Http.IncomingMessage, _response: Http.ServerResponse): Promise<void> {
-        let currentUrl: url.UrlWithParsedQuery = url.parse(_request.url, true);
+        // let currentUrl: url.UrlWithParsedQuery = url.parse(_request.url, true);
         console.log(_request.url);
         console.log("Link wurde gesendet");
         _response.setHeader("content-type", "text/html; charset=utf-8");
