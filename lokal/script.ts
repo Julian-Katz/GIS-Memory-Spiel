@@ -1,6 +1,7 @@
 let addLinkForm: HTMLFormElement = document.forms.namedItem("add-link-form");
 addLinkForm.addEventListener("submit", handleFormSubmit);
-let serverUrl: string = "http://localhost:8100/";
+// let serverUrl: string = "http://localhost:8100/";
+let serverUrl: string = "https://testgisjk.herokuapp.com/";
 
 // getCards();
 
