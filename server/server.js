@@ -1,13 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// application/json
 const Http = require("http");
 const url = require("url");
 const Mongo = require("mongodb");
 var Server;
 (function (Server) {
-    // Add new Cards
-    let addNewCardsAllowed = false;
-    let cards = [];
     // Http Requests
     let server = Http.createServer();
     let port = process.env.PORT;
@@ -23,7 +21,7 @@ var Server;
                 console.log("Karten werden an CLient gesendet");
                 _response.setHeader("content-type", "json; charset=utf-8");
                 _response.setHeader("Access-Control-Allow-Origin", "*");
-                _response.write(cards);
+                _response.write(JSON.stringify(await getCards()));
                 break;
             case "/":
                 console.log("Link wurde gesendet");
@@ -34,54 +32,43 @@ var Server;
         }
         _response.end();
     }
-    // Database
+    // Database Get Data
     let databaseUrl = "mongodb+srv://user:12345@gis-ist-geil.wwlee.mongodb.net/memory?retryWrites=true&w=majority";
-    let options = { useNewUrlParser: true, useUnifiedTopology: true };
-    let mongoClient = new Mongo.MongoClient(databaseUrl, options);
-    async function connecttoDatabase() {
+    let mongoClient = new Mongo.MongoClient(databaseUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+    async function getCards() {
+        let cards = [];
         await mongoClient.connect();
-        loadCardsFromDbReturnLength().then((data) => {
-            if (data < 9) {
-                addNewCardsAllowed = true;
-            }
-        });
-    }
-    connecttoDatabase();
-    // DB functions
-    async function loadCardsFromDbReturnLength() {
         let cardLinks = await mongoClient.db("memory").collection("cards").find().toArray();
-        cards = [];
+        mongoClient.close();
         for (const i of cardLinks) {
             cards.push(linkToCard(i.link));
         }
-        return cards.length;
+        return cards;
     }
+    async function addNewCardsAllowed() {
+        await mongoClient.connect();
+        if (await mongoClient.db("memory").collection("cards").countDocuments() < 8) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    // Database write Data
     function deleteByLinkFromDb(_link) {
         mongoClient.db("memory").collection("cards").findOneAndDelete({ link: _link });
-        loadCardsFromDbReturnLength().then((data) => {
-            if (data < 9) {
-                addNewCardsAllowed = true;
-            }
-            else {
-                addNewCardsAllowed = false;
-            }
-        });
     }
     function addByLinkToDb(_link) {
         mongoClient.db("memory").collection("cards").insertOne({ link: _link });
-        loadCardsFromDbReturnLength().then((data) => {
-            if (data < 8) {
-                addNewCardsAllowed = true;
-            }
-            else {
-                addNewCardsAllowed = false;
-            }
-        });
     }
     // General Functions
     function linkToCard(_link, _id) {
         let card = { id: _id, link: _link };
         return card;
     }
+    async function log() {
+        console.log(await addNewCardsAllowed());
+    }
+    log();
 })(Server || (Server = {}));
 //# sourceMappingURL=server.js.map

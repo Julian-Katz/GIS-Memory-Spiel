@@ -1,3 +1,4 @@
+// application/json
 import * as Http from "http";
 import * as url from "url";
 import * as Mongo from "mongodb";
@@ -11,10 +12,6 @@ namespace Server {
     id: string;
     link: string;
     }
-
-    // Add new Cards
-    let addNewCardsAllowed: boolean = false;
-    let cards: Card[] = [];
 
     // Http Requests
     let server: Http.Server = Http.createServer();
@@ -32,7 +29,7 @@ namespace Server {
                 console.log("Karten werden an CLient gesendet");
                 _response.setHeader("content-type", "json; charset=utf-8");
                 _response.setHeader("Access-Control-Allow-Origin", "*");
-                _response.write(cards);
+                _response.write(JSON.stringify(await getCards()));
                 break;
             case "/":
                 console.log("Link wurde gesendet");
@@ -44,59 +41,45 @@ namespace Server {
         _response.end();
         }
     
-    
-    
-    // Database
+    // Database Get Data
     let databaseUrl: string = "mongodb+srv://user:12345@gis-ist-geil.wwlee.mongodb.net/memory?retryWrites=true&w=majority";
-    let options: Mongo.MongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
-    let mongoClient: Mongo.MongoClient = new Mongo.MongoClient(databaseUrl, options);
-    
-    async function connecttoDatabase(): Promise<void> {
-        await mongoClient.connect();
-        loadCardsFromDbReturnLength().then((data) => {
-            if (data < 9) {
-                addNewCardsAllowed = true;
-            }
-        });
+    let mongoClient: Mongo.MongoClient = new Mongo.MongoClient(databaseUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 
-        
-    }
-    connecttoDatabase(); 
-    
-    // DB functions
-    async function loadCardsFromDbReturnLength(): Promise<number> {
+    async function getCards(): Promise<Card[]> {
+        let cards: Card[] = [];
+        await mongoClient.connect();
         let cardLinks: CardDbData[] = await mongoClient.db("memory").collection("cards").find().toArray();
-        cards = [];
+        mongoClient.close();
         for (const i of cardLinks) {
             cards.push(linkToCard(i.link));
         }
-        return cards.length;
+        return cards;
+        }
+    
+    async function addNewCardsAllowed(): Promise<boolean> {
+        await mongoClient.connect();
+        if (await mongoClient.db("memory").collection("cards").countDocuments() < 8) {
+            return true;
+        } else {
+            return false;
+        }
     }
+    // Database write Data
     function deleteByLinkFromDb(_link: string): void {
         mongoClient.db("memory").collection("cards").findOneAndDelete({link: _link});
-        loadCardsFromDbReturnLength().then((data) => {
-            if (data < 9) {
-                addNewCardsAllowed = true;
-            } else {
-                addNewCardsAllowed = false;
-            }
-        });
     }
     function addByLinkToDb(_link: string): void {
         mongoClient.db("memory").collection("cards").insertOne({link: _link});
-        loadCardsFromDbReturnLength().then((data) => {
-            if (data < 8) {
-                addNewCardsAllowed = true;
-            } else {
-                addNewCardsAllowed = false;
-            }
-        });
     }
+    
     // General Functions
     function linkToCard(_link: string, _id?: string): Card {
         let card: Card = {id: _id, link: _link};
         return card;
     }
-    
+    async function log(): Promise<void> {
+        console.log(await addNewCardsAllowed());
+    }
+    log();
     
 }

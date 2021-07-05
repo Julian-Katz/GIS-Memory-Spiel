@@ -16,7 +16,6 @@ async function handleFormSubmit(_event: Event): Promise<void> {
     let response: Response = await fetch(url);
     let responseValue: string = await response.text();
     console.log(responseValue);
-    
 }
 
 
