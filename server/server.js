@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// application/json
 const Http = require("http");
 const url = require("url");
 const Mongo = require("mongodb");
