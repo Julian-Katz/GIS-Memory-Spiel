@@ -17,10 +17,19 @@ async function handleFormSubmit(_event) {
     console.log(responseValue);
 }
 async function getCards() {
-    let url = serverUrl;
-    url = url + "getCards/";
-    let response = await fetch(url);
-    let responseValue = await response.text();
-    console.log(responseValue);
+    try {
+        let url = serverUrl;
+        url = url + "getCards/";
+        let response = await fetch(url);
+        let cards = JSON.parse(await response.text());
+        return cards;
+    }
+    catch (error) {
+        console.log(error);
+    }
 }
+async function log() {
+    console.log(await getCards());
+}
+log();
 //# sourceMappingURL=script.js.map
