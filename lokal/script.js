@@ -1,8 +1,8 @@
 "use strict";
 var script;
 (function (script) {
-    let serverUrl = "http://localhost:8100/";
-    // let serverUrl: string = "https://testgisjk.herokuapp.com/";
+    // let serverUrl: string = "http://localhost:8100/";
+    let serverUrl = "https://testgisjk.herokuapp.com/";
     // --- Admin Page ---
     if (document.URL.match("admin")) {
         let addLinkForm = document.forms.namedItem("add-link-form");
