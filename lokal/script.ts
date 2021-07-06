@@ -53,11 +53,9 @@ namespace script {
         if (firstTurn === true && gameIsRunning === false) {
             // start timer
             gameIsRunning = true;
-        } else if (true) {
-
         }
     }
-    function cardsAreEqual(card1: Card, card2: Card): boolean {
+    function cardsAreEqual (card1: Card, card2: Card): boolean {
         if (card1.id.startsWith(card2.id)) {
             return true;
         }

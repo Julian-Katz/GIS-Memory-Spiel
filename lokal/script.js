@@ -47,8 +47,6 @@ var script;
             // start timer
             gameIsRunning = true;
         }
-        else if (true) {
-        }
     }
     function cardsAreEqual(card1, card2) {
         if (card1.id.startsWith(card2.id)) {
