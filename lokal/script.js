@@ -1,8 +1,8 @@
 "use strict";
 var script;
 (function (script) {
-    // let serverUrl: string = "http://localhost:8100/";
-    let serverUrl = "https://testgisjk.herokuapp.com/";
+    let serverUrl = "http://localhost:8100/";
+    // let serverUrl: string = "https://testgisjk.herokuapp.com/";
     // --- Admin Page ---
     if (document.URL.match("admin")) {
         let addLinkForm = document.forms.namedItem("add-link-form");
@@ -31,9 +31,14 @@ var script;
     // --- Game Page ---
     let firstTurn = false;
     let secondTurn = false;
+    let gameIsRunning = false;
+    let startTime = Date.now();
+    let startTimeFix = Date.now();
+    let sec = 0;
+    let min = 0;
+    let cardArea = document.getElementById("game-cards");
     if (document.URL.match("game")) {
         async function doAsync() {
-            let cardArea = document.getElementById("game-cards");
             await displayCards(cardArea);
             addEventListenerToCards();
         }
@@ -42,17 +47,66 @@ var script;
     }
     // Game Funktionen
     function startGame() {
-        let gameIsRunning = false;
         if (firstTurn === true && gameIsRunning === false) {
             // start timer
+            startTimer();
             gameIsRunning = true;
+        }
+        else if (firstTurn === true && secondTurn === true) {
+            removeEventListenerFromCards();
+            let rotatedCards = Array.from(document.querySelectorAll(".rotate-card"));
+            if (cardsAreEqual(rotatedCards[0], rotatedCards[1])) {
+                console.log("Karten Gleich");
+                setTimeout(() => {
+                    cardArea.removeChild(rotatedCards[0].parentElement);
+                    cardArea.removeChild(rotatedCards[1].parentElement);
+                    let cards = document.querySelectorAll(".card");
+                    console.log(cards);
+                    if (cards.length === 0) {
+                        gameFinished();
+                    }
+                    addEventListenerToCards();
+                }, 2000);
+            }
+            else {
+                console.log("Karten ungleich");
+                setTimeout(() => {
+                    rotatedCards[0].classList.remove("rotate-card");
+                    rotatedCards[1].classList.remove("rotate-card");
+                    addEventListenerToCards();
+                }, 2000);
+            }
+            firstTurn = false;
+            secondTurn = false;
         }
     }
     function cardsAreEqual(card1, card2) {
-        if (card1.id.startsWith(card2.id)) {
+        if (card1.id.charAt(0) === card2.id.charAt(0)) {
             return true;
         }
         return false;
+    }
+    function startTimer() {
+        setInterval(handleAddOneSecond, 100);
+    }
+    function handleAddOneSecond() {
+        let timer = Date.now() - startTime;
+        if (timer >= 950) {
+            sec++;
+            startTime = Date.now();
+        }
+        if (sec === 60) {
+            min++;
+            sec = 0;
+        }
+        let htmlTimer = document.getElementById("game-timer");
+        htmlTimer.innerText = `${min.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${sec.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${timer.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}`;
+    }
+    function gameFinished() {
+        let finalTimerTimeinMs = Date.now() - startTimeFix;
+        localStorage.setItem("finalTimerTimeinMs", JSON.stringify(finalTimerTimeinMs));
+        console.log(localStorage.getItem("finalTimerTimeinMs"));
+        window.location.replace("./gameDone.html");
     }
     async function getCards() {
         let url = serverUrl;
@@ -98,20 +152,28 @@ var script;
     function addEventListenerToCards() {
         let htmlCards = Array.from(document.querySelectorAll(".card"));
         htmlCards.forEach(card => {
-            card.addEventListener("click", function () {
-                card.classList.add("rotate-card");
-                if (firstTurn === false) {
-                    console.log("first Turn");
-                    firstTurn = true;
-                }
-                else if (firstTurn === true && secondTurn === false) {
-                    console.log("second turn");
-                    secondTurn = true;
-                }
-                console.log("eine Karte gedreht " + firstTurn);
-                console.log("zwei Karten gedreht " + secondTurn);
-            });
+            card.addEventListener("click", handleCardTurn);
         });
+    }
+    function removeEventListenerFromCards() {
+        let htmlCards = Array.from(document.querySelectorAll(".card"));
+        htmlCards.forEach(card => {
+            card.removeEventListener("click", handleCardTurn);
+        });
+    }
+    function handleCardTurn(_event) {
+        let card = _event.currentTarget;
+        card.classList.add("rotate-card");
+        card.removeEventListener("click", handleCardTurn);
+        if (firstTurn === false) {
+            console.log("first Turn");
+            firstTurn = true;
+        }
+        else if (firstTurn === true && secondTurn === false) {
+            console.log("second turn");
+            secondTurn = true;
+        }
+        startGame();
     }
     // Funktion von hier: https://javascript.info/task/shuffle
     function shuffle(array) {

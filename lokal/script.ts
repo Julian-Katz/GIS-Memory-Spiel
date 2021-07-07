@@ -1,6 +1,6 @@
 namespace script {
-    // let serverUrl: string = "http://localhost:8100/";
-    let serverUrl: string = "https://testgisjk.herokuapp.com/";
+    let serverUrl: string = "http://localhost:8100/";
+    // let serverUrl: string = "https://testgisjk.herokuapp.com/";
     
     
     // --- Admin Page ---
@@ -23,22 +23,27 @@ namespace script {
         function deleteCards(): void {
             let htmlCards: NodeList = document.querySelectorAll(".card-container");
         }
-
-
+        
+        
         async function doAsync(): Promise<void> {
             let cardArea: HTMLElement = document.getElementById("game-cards");
             await displayCards(cardArea);
             deleteCards();
         }
         doAsync();
-
+        
     }
     // --- Game Page ---
     let firstTurn: boolean = false;
     let secondTurn: boolean = false;
+    let gameIsRunning: boolean = false;
+    let startTime: number = Date.now(); 
+    let startTimeFix: number = Date.now(); 
+    let sec: number = 0;
+    let min: number = 0;
+    let cardArea: HTMLElement = document.getElementById("game-cards");
     if (document.URL.match("game")) {
         async function doAsync(): Promise<void> {
-            let cardArea: HTMLElement = document.getElementById("game-cards");
             await displayCards(cardArea);
             addEventListenerToCards();
         }
@@ -48,18 +53,66 @@ namespace script {
     }
 
     // Game Funktionen
-    function startGame() {
-        let gameIsRunning = false;
+    function startGame(): void {
         if (firstTurn === true && gameIsRunning === false) {
             // start timer
+            startTimer();
             gameIsRunning = true;
+        } else if (firstTurn === true && secondTurn === true) {
+            removeEventListenerFromCards();
+            let rotatedCards: HTMLElement[] = Array.from(document.querySelectorAll(".rotate-card"));
+            if (cardsAreEqual(rotatedCards[0], rotatedCards[1])){
+                console.log("Karten Gleich");
+                setTimeout(() => {
+                    cardArea.removeChild(rotatedCards[0].parentElement);
+                    cardArea.removeChild(rotatedCards[1].parentElement);
+                    let cards: NodeList = document.querySelectorAll(".card");
+                    console.log(cards);
+                    
+                    if (cards.length === 0) {
+                        gameFinished();
+                    }
+                    addEventListenerToCards();
+                },         2000);
+            } else {
+                console.log("Karten ungleich");
+                setTimeout(() => {
+                        rotatedCards[0].classList.remove("rotate-card");
+                        rotatedCards[1].classList.remove("rotate-card");
+                        addEventListenerToCards();
+                    },     2000);
+                }
+            firstTurn = false;
+            secondTurn = false;
         }
     }
-    function cardsAreEqual (card1: Card, card2: Card): boolean {
-        if (card1.id.startsWith(card2.id)) {
+    function cardsAreEqual (card1: HTMLElement, card2: HTMLElement): boolean {
+        if (card1.id.charAt(0) === card2.id.charAt(0)) {
             return true;
         }
         return false; 
+    }
+    function startTimer(): void {
+        setInterval(handleAddOneSecond, 100);
+    }
+    function handleAddOneSecond(): void {
+        let timer: number = Date.now() - startTime;
+        if (timer >= 950) {
+            sec++;
+            startTime = Date.now();
+        }
+        if (sec === 60) {
+            min++;
+            sec = 0;
+        }
+        let htmlTimer: HTMLElement = document.getElementById("game-timer");
+        htmlTimer.innerText = `${min.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${sec.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${timer.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}`;
+    }
+    function gameFinished(): void {
+        let finalTimerTimeinMs: number = Date.now() - startTimeFix;
+        localStorage.setItem("finalTimerTimeinMs", JSON.stringify(finalTimerTimeinMs));
+        console.log(localStorage.getItem("finalTimerTimeinMs"));
+        window.location.replace("./gameDone.html");
     }
 
     // --- Cards ---
@@ -113,8 +166,19 @@ namespace script {
     function addEventListenerToCards(): void {
     let htmlCards: HTMLElement[] = Array.from(document.querySelectorAll(".card"));
     htmlCards.forEach(card => {
-        card.addEventListener("click", function(): void {
+        card.addEventListener("click", handleCardTurn);
+            });
+    }
+    function removeEventListenerFromCards(): void {
+    let htmlCards: HTMLElement[] = Array.from(document.querySelectorAll(".card"));
+    htmlCards.forEach(card => {
+        card.removeEventListener("click", handleCardTurn);
+            });
+    }
+    function handleCardTurn(_event: Event): void {
+            let card: HTMLElement = <HTMLElement> _event.currentTarget;
             card.classList.add("rotate-card");
+            card.removeEventListener("click", handleCardTurn);
             if (firstTurn === false) {
                 console.log("first Turn");  
                 firstTurn = true;
@@ -122,11 +186,9 @@ namespace script {
                     console.log("second turn");
                     secondTurn = true;
                 }
-            console.log("eine Karte gedreht " + firstTurn);
-            console.log("zwei Karten gedreht " + secondTurn);
-                });
-            });
+            startGame();
     }
+
     // Funktion von hier: https://javascript.info/task/shuffle
     function shuffle(array: string[] | number[]): void {
         array.sort(() => Math.random() - 0.5);
