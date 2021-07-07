@@ -1,15 +1,15 @@
 "use strict";
 var script;
 (function (script) {
-    let serverUrl = "http://localhost:8100/";
-    // let serverUrl: string = "https://testgisjk.herokuapp.com/";
+    script.serverUrl = "http://localhost:8100/";
+    // export let serverUrl: string = "https://testgisjk.herokuapp.com/";
     // --- Admin Page ---
     if (document.URL.match("admin")) {
         let addLinkForm = document.forms.namedItem("add-link-form");
         addLinkForm.addEventListener("submit", handleFormSubmit);
         async function handleFormSubmit(_event) {
             _event.preventDefault();
-            let url = serverUrl;
+            let url = script.serverUrl;
             let formData = new FormData(addLinkForm);
             let query = new URLSearchParams(formData);
             url = url + "?" + query.toString();
@@ -109,7 +109,7 @@ var script;
         window.location.replace("./gameDone.html");
     }
     async function getCards() {
-        let url = serverUrl;
+        let url = script.serverUrl;
         url = url + "getCards/";
         let response = await fetch(url);
         let cards = JSON.parse(await response.text());

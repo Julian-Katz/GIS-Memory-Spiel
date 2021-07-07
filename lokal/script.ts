@@ -1,6 +1,6 @@
 namespace script {
-    let serverUrl: string = "http://localhost:8100/";
-    // let serverUrl: string = "https://testgisjk.herokuapp.com/";
+    export let serverUrl: string = "http://localhost:8100/";
+    // export let serverUrl: string = "https://testgisjk.herokuapp.com/";
     
     
     // --- Admin Page ---
