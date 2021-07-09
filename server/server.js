@@ -18,16 +18,37 @@ var Server;
             let currentUrl = url.parse(_request.url, true);
             switch (currentUrl.pathname) {
                 case "/getCards/":
-                    _response.setHeader("content-type", "text; charset=utf-8");
+                    _response.setHeader("content-type", "json; charset=utf-8");
                     _response.setHeader("Access-Control-Allow-Origin", "*");
                     _response.write(JSON.stringify(await getCards()));
                     console.log("Karten wurden an CLient gesendet");
                     break;
-                case "/":
+                case "/addCard/":
                     _response.setHeader("content-type", "text/html; charset=utf-8");
                     _response.setHeader("Access-Control-Allow-Origin", "*");
-                    _response.write("Die Daten wurden an den Server übertragen.");
-                    console.log("Link erhalten");
+                    let addUrl = currentUrl.query;
+                    if (await addNewCardsAllowed()) {
+                        await addCardByLinkToDb(addUrl["link"]);
+                        _response.write("Karte wurde hinzugefügt");
+                    }
+                    else {
+                        _response.write("Maximale Anzahl an Karten erreicht");
+                    }
+                    break;
+                case "/deleteCard/":
+                    _response.setHeader("content-type", "text/html; charset=utf-8");
+                    _response.setHeader("Access-Control-Allow-Origin", "*");
+                    let deleteUrl = currentUrl.query;
+                    await deleteCardByLinkFromDb(deleteUrl["link"]);
+                    _response.write("Die Karte wurde gelöscht.");
+                    break;
+                case "/getScores/":
+                    _response.setHeader("content-type", "json; charset=utf-8");
+                    _response.setHeader("Access-Control-Allow-Origin", "*");
+                    _response.write(JSON.stringify(await getScores()));
+                    console.log("Scores wurden an CLient gesendet");
+                    break;
+                case "/addScore/":
                     break;
             }
             _response.end();
@@ -50,6 +71,7 @@ var Server;
         }
     }
     // Database Get Data
+    // Cards
     async function getCards() {
         await connectDB();
         let cards = [];
@@ -67,6 +89,18 @@ var Server;
         else {
             return false;
         }
+    }
+    // Scores
+    async function getScores() {
+        await connectDB();
+        let scores = [];
+        let scoresDb = await mongoClient.db("memory").collection("scores").find().toArray();
+        console.log(scoresDb);
+        for (const i of scoresDb) {
+            delete i._id;
+            scores.push(i);
+        }
+        return scores;
     }
     // Database write Data
     async function deleteCardByLinkFromDb(_link) {

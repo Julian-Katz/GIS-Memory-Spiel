@@ -4,33 +4,18 @@ namespace script {
     
     
     // --- Admin Page ---
+    let cardArea: HTMLElement = document.getElementById("game-cards");             
     if (document.URL.match("admin")) {
+        async function doAsync(): Promise<void> {
+            await displayCards(cardArea, true);
+            addEventListenerDeleteCards();
+        }
+        doAsync();
+        
+        // Admin Form
         let addLinkForm: HTMLFormElement = document.forms.namedItem("add-link-form");
         addLinkForm.addEventListener("submit", handleFormSubmit);
         
-        async function handleFormSubmit(_event: Event): Promise<void> {
-            _event.preventDefault();
-            let url: string = serverUrl;
-            let formData: FormData = new FormData(addLinkForm);
-            let query: URLSearchParams = new URLSearchParams(<any>formData);
-            url = url + "?" + query.toString();
-            let response: Response = await fetch(url);
-            let responseValue: string = await response.text();
-            console.log(responseValue);
-        }
-
-        // Admin Cards Delete Btn
-        function deleteCards(): void {
-            let htmlCards: NodeList = document.querySelectorAll(".card-container");
-        }
-        
-        
-        async function doAsync(): Promise<void> {
-            let cardArea: HTMLElement = document.getElementById("game-cards");
-            await displayCards(cardArea);
-            deleteCards();
-        }
-        doAsync();
         
     }
     // --- Game Page ---
@@ -41,7 +26,6 @@ namespace script {
     let startTimeFix: number = Date.now(); 
     let sec: number = 0;
     let min: number = 0;
-    let cardArea: HTMLElement = document.getElementById("game-cards");
     if (document.URL.match("game")) {
         async function doAsync(): Promise<void> {
             await displayCards(cardArea);
@@ -51,7 +35,54 @@ namespace script {
         doAsync();
         
     }
+    
+    // Admin Funktionen
+    async function handleFormSubmit(_event: Event): Promise<void> {
+        _event.preventDefault();
+        let formInput: HTMLFormElement = <HTMLFormElement> _event.currentTarget.getElementsByTagName("input")[0];
+        console.log(formInput);
+        let url: string = serverUrl + "addCard/";
+        let formData: FormData = new FormData(<HTMLFormElement>_event.currentTarget);
+        let query: URLSearchParams = new URLSearchParams(<any>formData);
+        url = url + "?" + query.toString();
+        let response: Response = await fetch(url);
+        let responseValue: string = await response.text();
+        console.log(responseValue);
+        await displayCards(cardArea, true);
+        addEventListenerDeleteCards();
+        formInput.value = "";
+    }
 
+
+    // Admin Cards Delete Btn
+    function addEventListenerDeleteCards(): void {
+        let htmlCards: HTMLElement[] = Array.from(document.querySelectorAll(".card-container"));
+        htmlCards.forEach((card) => {
+            card.addEventListener("click", handleCardDelete);
+        });
+    }
+    async function handleCardDelete(_event: Event): Promise<void> {
+        let card: HTMLElement = <HTMLElement> _event.currentTarget.firstChild;
+        let cardId: string = card.id.charAt(0);
+        let secondCard: HTMLElement = document.getElementById(`${cardId}0`).parentElement;
+        let firstCard: HTMLElement = document.getElementById(`${cardId}1`).parentElement;
+        cardArea.removeChild(secondCard);
+        cardArea.removeChild(firstCard);
+        let imgElement: HTMLImageElement = card.getElementsByTagName("img")[0];
+        let imgLink: string = imgElement.src;
+        await deleteCardFromDB(imgLink);
+        await displayCards(cardArea, true);
+        addEventListenerDeleteCards();
+
+    }
+    async function deleteCardFromDB(_link: string): Promise<void> {
+        let url: string = serverUrl + "deleteCard/";
+        let query: URLSearchParams = new URLSearchParams(<any>{link: _link});
+        url = url + "?" + query.toString();
+        let response: Response = await fetch(url);
+        let responseValue: string = await response.text();
+        console.log(responseValue);
+    }
     // Game Funktionen
     function startGame(): void {
         if (firstTurn === true && gameIsRunning === false) {
@@ -141,13 +172,17 @@ namespace script {
         let cardsAndIds: Card[] = cards.concat(cards1);
         return cardsAndIds;
     }
-    async function displayCards(_placeInside: HTMLElement): Promise<void> {
+    async function displayCards(_placeInside: HTMLElement, _showFront?: boolean): Promise<void> {
+        let showFrontClass: string = "";
+        if (_showFront) {
+            showFrontClass = "rotate-card";
+        }
         let cardsAndIds: Card[] = await giveCardsID();
         for (const card of cardsAndIds ) {
         let htmlCard: HTMLElement = document.createElement("div");
         htmlCard.classList.add("card-container");
         htmlCard.style.gridArea = card.id;
-        htmlCard.innerHTML = `<div class="card" id="${card.id}"><div class="card-back"></div><div class="card-front"><img src="${card.link}"alt="Memory Card"></div>`;
+        htmlCard.innerHTML = `<div class="card ${showFrontClass}" id="${card.id}"><div class="card-back"></div><div class="card-front"><img src="${card.link}"alt="Memory Card"></div>`;
         _placeInside.appendChild(htmlCard);
             }
 

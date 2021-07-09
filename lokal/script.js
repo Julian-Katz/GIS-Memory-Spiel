@@ -4,29 +4,16 @@ var script;
     //script.serverUrl = "http://localhost:8100/";
     let serverUrl: string = "https://testgisjk.herokuapp.com/";
     // --- Admin Page ---
+    let cardArea = document.getElementById("game-cards");
     if (document.URL.match("admin")) {
-        let addLinkForm = document.forms.namedItem("add-link-form");
-        addLinkForm.addEventListener("submit", handleFormSubmit);
-        async function handleFormSubmit(_event) {
-            _event.preventDefault();
-            let url = script.serverUrl;
-            let formData = new FormData(addLinkForm);
-            let query = new URLSearchParams(formData);
-            url = url + "?" + query.toString();
-            let response = await fetch(url);
-            let responseValue = await response.text();
-            console.log(responseValue);
-        }
-        // Admin Cards Delete Btn
-        function deleteCards() {
-            let htmlCards = document.querySelectorAll(".card-container");
-        }
         async function doAsync() {
-            let cardArea = document.getElementById("game-cards");
-            await displayCards(cardArea);
-            deleteCards();
+            await displayCards(cardArea, true);
+            addEventListenerDeleteCards();
         }
         doAsync();
+        // Admin Form
+        let addLinkForm = document.forms.namedItem("add-link-form");
+        addLinkForm.addEventListener("submit", handleFormSubmit);
     }
     // --- Game Page ---
     let firstTurn = false;
@@ -36,7 +23,6 @@ var script;
     let startTimeFix = Date.now();
     let sec = 0;
     let min = 0;
-    let cardArea = document.getElementById("game-cards");
     if (document.URL.match("game")) {
         async function doAsync() {
             await displayCards(cardArea);
@@ -44,6 +30,50 @@ var script;
         }
         randomGrid();
         doAsync();
+    }
+    // Admin Funktionen
+    async function handleFormSubmit(_event) {
+        _event.preventDefault();
+        let formInput = _event.currentTarget.getElementsByTagName("input")[0];
+        console.log(formInput);
+        let url = script.serverUrl + "addCard/";
+        let formData = new FormData(_event.currentTarget);
+        let query = new URLSearchParams(formData);
+        url = url + "?" + query.toString();
+        let response = await fetch(url);
+        let responseValue = await response.text();
+        console.log(responseValue);
+        await displayCards(cardArea, true);
+        addEventListenerDeleteCards();
+        formInput.value = "";
+    }
+    // Admin Cards Delete Btn
+    function addEventListenerDeleteCards() {
+        let htmlCards = Array.from(document.querySelectorAll(".card-container"));
+        htmlCards.forEach((card) => {
+            card.addEventListener("click", handleCardDelete);
+        });
+    }
+    async function handleCardDelete(_event) {
+        let card = _event.currentTarget.firstChild;
+        let cardId = card.id.charAt(0);
+        let secondCard = document.getElementById(`${cardId}0`).parentElement;
+        let firstCard = document.getElementById(`${cardId}1`).parentElement;
+        cardArea.removeChild(secondCard);
+        cardArea.removeChild(firstCard);
+        let imgElement = card.getElementsByTagName("img")[0];
+        let imgLink = imgElement.src;
+        await deleteCardFromDB(imgLink);
+        await displayCards(cardArea, true);
+        addEventListenerDeleteCards();
+    }
+    async function deleteCardFromDB(_link) {
+        let url = script.serverUrl + "deleteCard/";
+        let query = new URLSearchParams({ link: _link });
+        url = url + "?" + query.toString();
+        let response = await fetch(url);
+        let responseValue = await response.text();
+        console.log(responseValue);
     }
     // Game Funktionen
     function startGame() {
@@ -129,13 +159,17 @@ var script;
         let cardsAndIds = cards.concat(cards1);
         return cardsAndIds;
     }
-    async function displayCards(_placeInside) {
+    async function displayCards(_placeInside, _showFront) {
+        let showFrontClass = "";
+        if (_showFront) {
+            showFrontClass = "rotate-card";
+        }
         let cardsAndIds = await giveCardsID();
         for (const card of cardsAndIds) {
             let htmlCard = document.createElement("div");
             htmlCard.classList.add("card-container");
             htmlCard.style.gridArea = card.id;
-            htmlCard.innerHTML = `<div class="card" id="${card.id}"><div class="card-back"></div><div class="card-front"><img src="${card.link}"alt="Memory Card"></div>`;
+            htmlCard.innerHTML = `<div class="card ${showFrontClass}" id="${card.id}"><div class="card-back"></div><div class="card-front"><img src="${card.link}"alt="Memory Card"></div>`;
             _placeInside.appendChild(htmlCard);
         }
     }
