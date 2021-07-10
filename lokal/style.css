@@ -165,8 +165,6 @@ form button {
 /* delte bin */
 .bin{
   position: absolute;
-  width: 2rem;
-  height: 2rem;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
