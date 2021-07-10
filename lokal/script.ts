@@ -5,7 +5,7 @@ namespace script {
     
     // --- Admin Page ---
     let cardArea: HTMLElement = document.getElementById("game-cards");             
-    if (document.URL.match("admin")) {
+    if (document.URL.match("admin.html")) {
         async function doAsync(): Promise<void> {
             await displayCards(cardArea, true);
             addEventListenerDeleteCards();
@@ -26,7 +26,8 @@ namespace script {
     let startTimeFix: number = Date.now(); 
     let sec: number = 0;
     let min: number = 0;
-    if (document.URL.match("game")) {
+    
+    if (document.URL.match("game.html")) {
         async function doAsync(): Promise<void> {
             await displayCards(cardArea);
             addEventListenerToCards();
@@ -35,12 +36,68 @@ namespace script {
         doAsync();
         
     }
+    // ---- Game Done ----
+    if (document.URL.match("gameDone.html")) {
+        displayCurrentScore();
+        let addScoreForm: HTMLFormElement = document.forms.namedItem("add-score-form");
+        addScoreForm.addEventListener("submit", handleAddScoreForm);
+    }
+    // ---- Scores----
+    if (document.URL.match("score.html")) {
+        let scoresContainer: HTMLElement = document.querySelector(".scores");
+        displayScores(scoresContainer);
+        
+    }
     
-    // Admin Funktionen
+    // ---- Game Done Funktionen ----
+    async function handleAddScoreForm(_event: Event): Promise<void> {
+        _event.preventDefault();
+        let formData: FormData = new FormData(<HTMLFormElement>_event.currentTarget);
+        let url: string = serverUrl + "addScore/";
+        let score: string = JSON.parse(localStorage.getItem("finalScoreInMs"));
+        formData.set("score", score); 
+        formData.set("score", localStorage.getItem("finalScoreInMs"));
+        let query: URLSearchParams = new URLSearchParams(<any>formData);
+        url = url + "?" + query.toString();
+        let response: Response = await fetch(url);
+        let responseValue: string = await response.text();
+        console.log(responseValue);
+        localStorage.clear();
+        window.location.replace("./score.html");
+    }
+    function displayCurrentScore(): void {
+        let displayArea: HTMLElement = document.getElementById("current-score");
+        let score: number = JSON.parse(localStorage.getItem("finalScoreInMs"));
+        displayArea.innerText = score.toLocaleString();
+    }   
+    // ---- Scores Funktionen ----
+    interface Score {
+        name: string;
+        score: number;
+    }
+    async function displayScores(_placeInside: HTMLElement): Promise<void> {
+        let scores: Score[] = await getScores();
+        scores.sort((a: Score, b: Score): number => {
+            return a.score - b.score;
+        });
+        scores.forEach((score) => {
+        let scoreHtmlElement: HTMLElement = document.createElement("div");
+        scoreHtmlElement.classList.add("score");
+        scoreHtmlElement.innerHTML = `<p>Name: ${score.name} </p><p>Zeit: ${score.score}</p>`;
+        _placeInside.appendChild(scoreHtmlElement);
+        });
+    }
+    async function getScores(): Promise<Score[]> {
+        let url: string = serverUrl + "getScores/";
+        let response: Response = await fetch(url);
+        let responseValue: Score[] = await response.json();
+        return responseValue;
+    }
+
+    // ---- Admin Funktionen ----
     async function handleFormSubmit(_event: Event): Promise<void> {
         _event.preventDefault();
-        let formInput: HTMLFormElement = <HTMLFormElement> _event.currentTarget.getElementsByTagName("input")[0];
-        console.log(formInput);
+        let formInput: HTMLElement = <HTMLElement> _event.currentTarget.getElementsByTagName("input")[0];
         let url: string = serverUrl + "addCard/";
         let formData: FormData = new FormData(<HTMLFormElement>_event.currentTarget);
         let query: URLSearchParams = new URLSearchParams(<any>formData);
@@ -83,7 +140,7 @@ namespace script {
         let responseValue: string = await response.text();
         console.log(responseValue);
     }
-    // Game Funktionen
+    // ---- Game Funktionen ----
     function startGame(): void {
         if (firstTurn === true && gameIsRunning === false) {
             // start timer
@@ -140,13 +197,12 @@ namespace script {
         htmlTimer.innerText = `${min.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${sec.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${timer.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}`;
     }
     function gameFinished(): void {
-        let finalTimerTimeinMs: number = Date.now() - startTimeFix;
-        localStorage.setItem("finalTimerTimeinMs", JSON.stringify(finalTimerTimeinMs));
-        console.log(localStorage.getItem("finalTimerTimeinMs"));
+        let finalScoreInMs: number = Date.now() - startTimeFix;
+        localStorage.setItem("finalScoreInMs", JSON.stringify(finalScoreInMs));
         window.location.replace("./gameDone.html");
     }
 
-    // --- Cards ---
+    // --- Cards Funktionen ---
     interface Card {
         id: string;
         link: string;
@@ -224,8 +280,28 @@ namespace script {
             startGame();
     }
 
+    // Globale Funktionen
+    function msToMinMinSecSecMsMs(_ms: number): string {
+        let min: number = 0;
+        let sec: number = 0;
+        let ms: number = 0;
+        if (_ms >= 1000) {
+            if (_ms >= 1000) {
+                sec++;
+                _ms = _ms - 1000;
+            }
+            if (sec >= 60) {
+                min++;
+            }
+            msToMinMinSecSecMsMs(_ms);
+        } else {
+            _ms = ms;
+            return `${min.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${sec.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${ms.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}`;
+        }
+    }
     // Funktion von hier: https://javascript.info/task/shuffle
     function shuffle(array: string[] | number[]): void {
         array.sort(() => Math.random() - 0.5);
-}
+    }
+    
 }

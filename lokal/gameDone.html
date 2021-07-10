@@ -6,8 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <script src="./script.js"></script>
-    <script src="./score.js"></script>
+    <script src="./script.js" defer></script>
     <title>Memory - Game</title>
 </head>
 
@@ -15,11 +14,11 @@
     <div class="gameDone-container">
         <h2>Glückwunsch</h2>
         <div>
-            <form id="">
+            <form id="" name="add-score-form">
                 <input type="text" name="name">
                 <button type="submit"> eintragen</button>
             </form>
-            <p>Zeit: 00:00:00</p>
+            <p id="current-score">Zeit: 00:00:00</p>
         </div>
     </div>
 

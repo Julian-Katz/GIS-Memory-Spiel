@@ -49,6 +49,11 @@ var Server;
                     console.log("Scores wurden an CLient gesendet");
                     break;
                 case "/addScore/":
+                    _response.setHeader("content-type", "text/html; charset=utf-8");
+                    _response.setHeader("Access-Control-Allow-Origin", "*");
+                    let score = currentUrl.query;
+                    await addScore(score);
+                    _response.write("Score in DB geschrieben");
                     break;
             }
             _response.end();
@@ -95,7 +100,6 @@ var Server;
         await connectDB();
         let scores = [];
         let scoresDb = await mongoClient.db("memory").collection("scores").find().toArray();
-        console.log(scoresDb);
         for (const i of scoresDb) {
             delete i._id;
             scores.push(i);
@@ -103,6 +107,7 @@ var Server;
         return scores;
     }
     // Database write Data
+    // Cards
     async function deleteCardByLinkFromDb(_link) {
         await connectDB();
         mongoClient.db("memory").collection("cards").findOneAndDelete({ link: _link });
@@ -116,6 +121,11 @@ var Server;
         else {
             return "Maximal 8 Karten möglich";
         }
+    }
+    // Scores
+    async function addScore(_score) {
+        await connectDB();
+        mongoClient.db("memory").collection("scores").insertOne(_score);
     }
     // General Functions
     function linkToCard(_link, _id) {

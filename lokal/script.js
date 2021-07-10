@@ -1,11 +1,11 @@
 "use strict";
 var script;
 (function (script) {
-    //script.serverUrl = "http://localhost:8100/";
-    let serverUrl: string = "https://testgisjk.herokuapp.com/";
+    script.serverUrl = "http://localhost:8100/";
+    // export let serverUrl: string = "https://testgisjk.herokuapp.com/";
     // --- Admin Page ---
     let cardArea = document.getElementById("game-cards");
-    if (document.URL.match("admin")) {
+    if (document.URL.match("admin.html")) {
         async function doAsync() {
             await displayCards(cardArea, true);
             addEventListenerDeleteCards();
@@ -23,7 +23,7 @@ var script;
     let startTimeFix = Date.now();
     let sec = 0;
     let min = 0;
-    if (document.URL.match("game")) {
+    if (document.URL.match("game.html")) {
         async function doAsync() {
             await displayCards(cardArea);
             addEventListenerToCards();
@@ -31,11 +31,60 @@ var script;
         randomGrid();
         doAsync();
     }
-    // Admin Funktionen
+    // ---- Game Done ----
+    if (document.URL.match("gameDone.html")) {
+        displayCurrentScore();
+        let addScoreForm = document.forms.namedItem("add-score-form");
+        addScoreForm.addEventListener("submit", handleAddScoreForm);
+    }
+    // ---- Scores----
+    if (document.URL.match("score.html")) {
+        let scoresContainer = document.querySelector(".scores");
+        displayScores(scoresContainer);
+    }
+    // ---- Game Done Funktionen ----
+    async function handleAddScoreForm(_event) {
+        _event.preventDefault();
+        let formData = new FormData(_event.currentTarget);
+        let url = script.serverUrl + "addScore/";
+        let score = JSON.parse(localStorage.getItem("finalScoreInMs"));
+        formData.set("score", score);
+        formData.set("score", localStorage.getItem("finalScoreInMs"));
+        let query = new URLSearchParams(formData);
+        url = url + "?" + query.toString();
+        let response = await fetch(url);
+        let responseValue = await response.text();
+        console.log(responseValue);
+        localStorage.clear();
+        window.location.replace("./score.html");
+    }
+    function displayCurrentScore() {
+        let displayArea = document.getElementById("current-score");
+        let score = JSON.parse(localStorage.getItem("finalScoreInMs"));
+        displayArea.innerText = score.toLocaleString();
+    }
+    async function displayScores(_placeInside) {
+        let scores = await getScores();
+        scores.sort((a, b) => {
+            return a.score - b.score;
+        });
+        scores.forEach((score) => {
+            let scoreHtmlElement = document.createElement("div");
+            scoreHtmlElement.classList.add("score");
+            scoreHtmlElement.innerHTML = `<p>Name: ${score.name} </p><p>Zeit: ${score.score}</p>`;
+            _placeInside.appendChild(scoreHtmlElement);
+        });
+    }
+    async function getScores() {
+        let url = script.serverUrl + "getScores/";
+        let response = await fetch(url);
+        let responseValue = await response.json();
+        return responseValue;
+    }
+    // ---- Admin Funktionen ----
     async function handleFormSubmit(_event) {
         _event.preventDefault();
         let formInput = _event.currentTarget.getElementsByTagName("input")[0];
-        console.log(formInput);
         let url = script.serverUrl + "addCard/";
         let formData = new FormData(_event.currentTarget);
         let query = new URLSearchParams(formData);
@@ -75,7 +124,7 @@ var script;
         let responseValue = await response.text();
         console.log(responseValue);
     }
-    // Game Funktionen
+    // ---- Game Funktionen ----
     function startGame() {
         if (firstTurn === true && gameIsRunning === false) {
             // start timer
@@ -133,9 +182,8 @@ var script;
         htmlTimer.innerText = `${min.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${sec.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${timer.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}`;
     }
     function gameFinished() {
-        let finalTimerTimeinMs = Date.now() - startTimeFix;
-        localStorage.setItem("finalTimerTimeinMs", JSON.stringify(finalTimerTimeinMs));
-        console.log(localStorage.getItem("finalTimerTimeinMs"));
+        let finalScoreInMs = Date.now() - startTimeFix;
+        localStorage.setItem("finalScoreInMs", JSON.stringify(finalScoreInMs));
         window.location.replace("./gameDone.html");
     }
     async function getCards() {
@@ -208,6 +256,26 @@ var script;
             secondTurn = true;
         }
         startGame();
+    }
+    // Globale Funktionen
+    function msToMinMinSecSecMsMs(_ms) {
+        let min = 0;
+        let sec = 0;
+        let ms = 0;
+        if (_ms >= 1000) {
+            if (_ms >= 1000) {
+                sec++;
+                _ms = _ms - 1000;
+            }
+            if (sec >= 60) {
+                min++;
+            }
+            msToMinMinSecSecMsMs(_ms);
+        }
+        else {
+            _ms = ms;
+            return `${min.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${sec.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${ms.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}`;
+        }
     }
     // Funktion von hier: https://javascript.info/task/shuffle
     function shuffle(array) {

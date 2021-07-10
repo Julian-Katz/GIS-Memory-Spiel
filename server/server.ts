@@ -19,7 +19,6 @@ namespace Server {
     score: number;
     }
     interface Score {
-    _id: string;
     name: string;
     score: number;
     }
@@ -68,6 +67,11 @@ namespace Server {
                     console.log("Scores wurden an CLient gesendet");
                     break;
             case "/addScore/":
+                _response.setHeader("content-type", "text/html; charset=utf-8");
+                _response.setHeader("Access-Control-Allow-Origin", "*");
+                let score: ParsedUrlQuery = currentUrl.query;
+                await addScore(<Score> score);
+                _response.write("Score in DB geschrieben");
                 break;
                 
             }
@@ -115,7 +119,6 @@ namespace Server {
         await connectDB();
         let scores: Score[] = [];
         let scoresDb: ScoreDbData[] = await mongoClient.db("memory").collection("scores").find().toArray();
-        console.log(scoresDb);
         for (const i of scoresDb) {
             delete  i._id;
             scores.push(i);
@@ -124,6 +127,7 @@ namespace Server {
         }
         
     // Database write Data
+    // Cards
     async function deleteCardByLinkFromDb(_link: string): Promise<void> {
         await connectDB();
         mongoClient.db("memory").collection("cards").findOneAndDelete({link: _link});
@@ -137,7 +141,11 @@ namespace Server {
             return "Maximal 8 Karten möglich";
         }
     }
-    
+    // Scores
+    async function addScore(_score: Score) {
+        await connectDB();
+        mongoClient.db("memory").collection("scores").insertOne(_score);
+    }
     // General Functions
     function linkToCard(_link: string, _id: string): Card {
         let card: Card = {id: _id, link: _link};
