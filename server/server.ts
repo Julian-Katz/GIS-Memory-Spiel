@@ -1,9 +1,6 @@
 import * as Http from "http";
 import * as url from "url";
 import * as Mongo from "mongodb";
-import { ParsedUrlQuery } from "querystring";
-import { link } from "fs";
-
 namespace Server {
     interface CardDbData {
     _id: string;
@@ -142,7 +139,7 @@ namespace Server {
         }
     }
     // Scores
-    async function addScore(_score: Score) {
+    async function addScore(_score: Score): Promise<void> {
         await connectDB();
         mongoClient.db("memory").collection("scores").insertOne(_score);
     }
