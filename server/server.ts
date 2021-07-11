@@ -20,7 +20,6 @@ namespace Server {
     name: string;
     score: number;
     }
-
     // Http Requests
     let server: Http.Server = Http.createServer();
     let port: string | number | undefined = process.env.PORT;
@@ -94,7 +93,6 @@ namespace Server {
         
     // Database Get Data
     // Cards
-    
     async function getCards(): Promise<Card[]> {
         await connectDB();
         let cards: Card[] = [];

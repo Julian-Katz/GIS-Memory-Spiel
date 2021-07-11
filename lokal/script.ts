@@ -74,7 +74,8 @@ namespace script {
         let displayArea: HTMLElement = document.getElementById("current-score");
         let score: number = JSON.parse(localStorage.getItem("finalScoreInMs"));
         displayArea.innerText = msToMinMinSecSecMsMs(score);
-    }   
+    } 
+      
     // ---- Scores Funktionen ----
     interface Score {
         name: string;
@@ -119,8 +120,6 @@ namespace script {
         formInput.value = "";
     }
 
-
-    // Admin Cards Delete Btn
     function addEventListenerDeleteCards(): void {
         let htmlCards: HTMLElement[] = Array.from(document.querySelectorAll(".card-container"));
         htmlCards.forEach((card) => {
@@ -148,6 +147,7 @@ namespace script {
         let responseValue: string = await response.text();
         showMessage(responseValue, "good");
     }
+
     // ---- Game Funktionen ----
     function startGame(): void {
         if (firstTurn === true && gameIsRunning === false) {
@@ -292,6 +292,7 @@ namespace script {
             messageArea.classList.remove("show-message");
         },         3000);
     }
+
     // Globale Funktionen
     function msToMinMinSecSecMsMs(_ms: number): string {
         let min: number = 0;
