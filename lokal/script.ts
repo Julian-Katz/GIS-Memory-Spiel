@@ -1,15 +1,25 @@
 namespace script {
-    // export let serverUrl: string = "http://localhost:8100/";
-    export let serverUrl: string = "https://testgisjk.herokuapp.com/";
+    // let serverUrl: string = "http://localhost:8100/";
+    let serverUrl: string = "https://testgisjk.herokuapp.com/";
     
-    
+    // --- Index Page ---
+    if (document.URL.match("index.html")){
+        async function doAsync(): Promise<void> {
+            if (await (await getCards()).length === 8) {
+                let startLink: HTMLLinkElement =  <HTMLLinkElement> document.getElementById("start-link");
+                startLink.href = "./game.html";
+            } else {
+                showMessage("Füge unter Einstellungen Karten hinzu!", "bad");
+            }
+        }
+        doAsync();
+    }
     // --- Admin Page ---
     let cardArea: HTMLElement = document.getElementById("game-cards");             
     if (document.URL.match("admin.html")) {
         async function doAsync(): Promise<void> {
             await displayCards(cardArea, true);
             addEventListenerDeleteCards();
-            addBin();
         }
         doAsync();
         // Admin Form
@@ -21,9 +31,6 @@ namespace script {
     let secondTurn: boolean = false;
     let gameIsRunning: boolean = false;
     let startTime: number = Date.now(); 
-    let startTimeFix: number = Date.now(); 
-    let sec: number = 0;
-    let min: number = 0;
     
     if (document.URL.match("game.html")) {
         async function doAsync(): Promise<void> {
@@ -59,14 +66,14 @@ namespace script {
         url = url + "?" + query.toString();
         let response: Response = await fetch(url);
         let responseValue: string = await response.text();
-        console.log(responseValue);
+        showMessage(responseValue, "good");
         localStorage.clear();
         window.location.replace("./score.html");
     }
     function displayCurrentScore(): void {
         let displayArea: HTMLElement = document.getElementById("current-score");
         let score: number = JSON.parse(localStorage.getItem("finalScoreInMs"));
-        displayArea.innerText = score.toLocaleString();
+        displayArea.innerText = msToMinMinSecSecMsMs(score);
     }   
     // ---- Scores Funktionen ----
     interface Score {
@@ -81,7 +88,7 @@ namespace script {
         scores.forEach((score) => {
         let scoreHtmlElement: HTMLElement = document.createElement("div");
         scoreHtmlElement.classList.add("score");
-        scoreHtmlElement.innerHTML = `<p>Name: ${score.name} </p><p>Zeit: ${score.score}</p>`;
+        scoreHtmlElement.innerHTML = `<p>Name: ${score.name} </p><p>Zeit: ${msToMinMinSecSecMsMs(score.score)}</p>`;
         _placeInside.appendChild(scoreHtmlElement);
         });
     }
@@ -102,7 +109,11 @@ namespace script {
         url = url + "?" + query.toString();
         let response: Response = await fetch(url);
         let responseValue: string = await response.text();
-        console.log(responseValue);
+        if (responseValue === "Maximale Anzahl an Karten erreicht") {
+            showMessage(responseValue, "bad");
+        } else {
+            showMessage(responseValue, "good");
+        }
         await displayCards(cardArea, true);
         addEventListenerDeleteCards();
         formInput.value = "";
@@ -126,7 +137,6 @@ namespace script {
         let imgElement: HTMLImageElement = card.getElementsByTagName("img")[0];
         let imgLink: string = imgElement.src;
         await deleteCardFromDB(imgLink);
-        // await displayCards(cardArea, true);
         addEventListenerDeleteCards();
 
     }
@@ -136,17 +146,7 @@ namespace script {
         url = url + "?" + query.toString();
         let response: Response = await fetch(url);
         let responseValue: string = await response.text();
-        console.log(responseValue);
-    }
-    function addBin(): void {
-        let cardFronts: HTMLElement[] = Array.from(document.querySelectorAll(".card-front"));
-        let svg: HTMLElement = document.createElement("svg");
-        svg.classList.add("bin");
-        svg.dataset.viewBox = "0 0 448 512";
-        svg.innerHTML = `<path d="M268 416h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12zM432 80h-82.41l-34-56.7A48 48 0 0 0 274.41 0H173.59a48 48 0 0 0-41.16 23.3L98.41 80H16A16 16 0 0 0 0 96v16a16 16 0 0 0 16 16h16v336a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128h16a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16zM171.84 50.91A6 6 0 0 1 177 48h94a6 6 0 0 1 5.15 2.91L293.61 80H154.39zM368 464H80V128h288zm-212-48h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12z"/>`;
-        cardFronts.forEach((cardFront) => {
-            cardFront.prepend(svg);
-        });
+        showMessage(responseValue, "good");
     }
     // ---- Game Funktionen ----
     function startGame(): void {
@@ -158,12 +158,10 @@ namespace script {
             removeEventListenerFromCards();
             let rotatedCards: HTMLElement[] = Array.from(document.querySelectorAll(".rotate-card"));
             if (cardsAreEqual(rotatedCards[0], rotatedCards[1])) {
-                console.log("Karten Gleich");
                 setTimeout(() => {
                     cardArea.removeChild(rotatedCards[0].parentElement);
                     cardArea.removeChild(rotatedCards[1].parentElement);
                     let cards: NodeList = document.querySelectorAll(".card");
-                    console.log(cards);
                     
                     if (cards.length === 0) {
                         gameFinished();
@@ -171,7 +169,6 @@ namespace script {
                     addEventListenerToCards();
                 },         2000);
             } else {
-                console.log("Karten ungleich");
                 setTimeout(() => {
                         rotatedCards[0].classList.remove("rotate-card");
                         rotatedCards[1].classList.remove("rotate-card");
@@ -193,19 +190,11 @@ namespace script {
     }
     function handleAddOneSecond(): void {
         let timer: number = Date.now() - startTime;
-        if (timer >= 950) {
-            sec++;
-            startTime = Date.now();
-        }
-        if (sec === 60) {
-            min++;
-            sec = 0;
-        }
         let htmlTimer: HTMLElement = document.getElementById("game-timer");
-        htmlTimer.innerText = `${min.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${sec.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${timer.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}`;
+        htmlTimer.innerText = msToMinMinSecSecMsMs(timer);
     }
     function gameFinished(): void {
-        let finalScoreInMs: number = Date.now() - startTimeFix;
+        let finalScoreInMs: number = Date.now() - startTime;
         localStorage.setItem("finalScoreInMs", JSON.stringify(finalScoreInMs));
         window.location.replace("./gameDone.html");
     }
@@ -238,15 +227,18 @@ namespace script {
     }
     async function displayCards(_placeInside: HTMLElement, _showFront?: boolean): Promise<void> {
         let showFrontClass: string = "";
+        let svgBinString: string = "";
         if (_showFront) {
             showFrontClass = "rotate-card";
+            svgBinString = `<svg class="bin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.3 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M268 416h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12zM432 80h-82.41l-34-56.7A48 48 0 0 0 274.41 0H173.59a48 48 0 0 0-41.16 23.3L98.41 80H16A16 16 0 0 0 0 96v16a16 16 0 0 0 16 16h16v336a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128h16a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16zM171.84 50.91A6 6 0 0 1 177 48h94a6 6 0 0 1 5.15 2.91L293.61 80H154.39zM368 464H80V128h288zm-212-48h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12z"/></svg>`;
+
         }
         let cardsAndIds: Card[] = await giveCardsID();
         for (const card of cardsAndIds ) {
         let htmlCard: HTMLElement = document.createElement("div");
         htmlCard.classList.add("card-container");
         htmlCard.style.gridArea = card.id;
-        htmlCard.innerHTML = `<div class="card ${showFrontClass}" id="${card.id}"><div class="card-back"></div><div class="card-front"><img src="${card.link}"alt="Memory Card"></div>`;
+        htmlCard.innerHTML = `<div class="card ${showFrontClass}" id="${card.id}"><div class="card-back"></div><div class="card-front">${svgBinString}<img src="${card.link}"alt="Memory Card"></div>`;
         _placeInside.appendChild(htmlCard);
             }
 
@@ -279,37 +271,46 @@ namespace script {
             card.classList.add("rotate-card");
             card.removeEventListener("click", handleCardTurn);
             if (firstTurn === false) {
-                console.log("first Turn");  
                 firstTurn = true;
-                } else if (firstTurn === true && secondTurn === false) {
-                    console.log("second turn");
+                } else if (firstTurn === true && secondTurn === false) {;
                     secondTurn = true;
                 }
             startGame();
     }
-
+ 
+    // Message
+    function showMessage(_message: string, _type?: string): void {
+        let messageArea: HTMLElement = document.querySelector(".message");
+        messageArea.classList.add("show-message");
+        messageArea.innerHTML = `<p>${_message}</p>`;
+        if (_type === "bad") {
+            messageArea.style.background = "rgba(255, 53, 53, 0.466)";
+        } else if (_type === "good") {
+            messageArea.style.background = "rgba(0, 255, 13, 0.466)";
+        }
+        setTimeout(() => {
+            messageArea.classList.remove("show-message");
+        },         3000);
+    }
     // Globale Funktionen
     function msToMinMinSecSecMsMs(_ms: number): string {
         let min: number = 0;
         let sec: number = 0;
         let ms: number = 0;
-        if (_ms >= 1000) {
-            if (_ms >= 1000) {
-                sec++;
-                _ms = _ms - 1000;
-            }
-            if (sec >= 60) {
-                min++;
-            }
-            msToMinMinSecSecMsMs(_ms);
-        } else {
-            _ms = ms;
-            return `${min.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${sec.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${ms.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}`;
-        }
+
+        sec = Math.floor(_ms / 1000);
+        ms = _ms % 1000;
+        
+        min = Math.floor(sec / 60);
+        sec = sec % 60;
+
+        return `${min.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${sec.toLocaleString("de", { minimumIntegerDigits: 2, useGrouping: false })}:${ms.toLocaleString("de", { minimumIntegerDigits: 3, useGrouping: false })}`;
+     
+            
     }
     // Funktion von hier: https://javascript.info/task/shuffle
     function shuffle(array: string[] | number[]): void {
         array.sort(() => Math.random() - 0.5);
-    }
-    
+    } 
 }
+

@@ -170,15 +170,13 @@ form button {
   transform: translate(-50%, -50%);
   fill: var(--clr-white);
 }
-/* Score + Game Done*/
-.display-card,
-.score-body {
+/* ScoreGame Done*/
+.display-card {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100vw;
 }
-.gameDone-container,
 .score-container {
   background: var(--clr-white);
   height: 80vh;
@@ -202,4 +200,77 @@ padding: 1rem 1rem;
 width: 100%;
 border-radius: 1rem;
 background: var(--clr-secondPrimary);
+}
+/* Game Done */
+.gameDone {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+}
+.gameDone-container {
+  background: var(--clr-white);
+  height: 80vh;
+  width: 80vw;
+  border-radius: 1rem;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 1rem;
+  overflow: hidden;
+  text-align: center;
+}
+.gameDone-container > * {
+  width: 100%;
+}
+.gameDone h4 {
+  line-height: 0.8;
+}
+.gameDone form button {
+  margin: 0 auto;
+}
+.gameDone form input {
+  font-size: 2rem;
+}
+/* Messages */
+.message {
+  position: fixed;
+  top: 0;
+  background: rgba(0, 0, 0, 0.336);
+  height: 0;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: height 1s;
+  opacity: 0;
+}
+.show-message  {
+  height: 2rem;
+  opacity: 1;
+}
+@media only screen and (min-width: 768px){
+  .gameDone-container,
+  .score-container {
+    max-width: 600px;
+  }
+  .center-container,
+  .game-cards{
+    max-width: 700px;
+    max-height: 700px;
+  }
+}
+@media only screen and (min-width: 1024px){
+  .gameDone-container,
+  .score-container {
+    max-width: 800px;
+    margin: 1rem auto;
+  }
+  .center-container,
+  .game-cards{
+    margin: 1rem auto;
+    max-width: 900px;
+    max-height: 900px;
+  }
 }
