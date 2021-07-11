@@ -6,7 +6,7 @@ var script;
     // --- Index Page ---
     if (document.URL.match("index.html")) {
         async function doAsync() {
-            if (await (await getCards()).length === 8) {
+            if ((await getCards()).length === 8) {
                 let startLink = document.getElementById("start-link");
                 startLink.href = "./game.html";
             }
@@ -256,7 +256,6 @@ var script;
             firstTurn = true;
         }
         else if (firstTurn === true && secondTurn === false) {
-            ;
             secondTurn = true;
         }
         startGame();

@@ -3,9 +3,9 @@ namespace script {
     let serverUrl: string = "https://testgisjk.herokuapp.com/";
     
     // --- Index Page ---
-    if (document.URL.match("index.html")){
+    if (document.URL.match("index.html")) {
         async function doAsync(): Promise<void> {
-            if (await (await getCards()).length === 8) {
+            if ((await getCards()).length === 8) {
                 let startLink: HTMLLinkElement =  <HTMLLinkElement> document.getElementById("start-link");
                 startLink.href = "./game.html";
             } else {
@@ -272,7 +272,7 @@ namespace script {
             card.removeEventListener("click", handleCardTurn);
             if (firstTurn === false) {
                 firstTurn = true;
-                } else if (firstTurn === true && secondTurn === false) {;
+                } else if (firstTurn === true && secondTurn === false) {
                     secondTurn = true;
                 }
             startGame();

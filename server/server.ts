@@ -1,6 +1,7 @@
 import * as Http from "http";
 import * as url from "url";
 import * as Mongo from "mongodb";
+import { ParsedUrlQuery } from "querystring";
 namespace Server {
     interface CardDbData {
     _id: string;
